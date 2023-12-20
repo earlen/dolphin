@@ -1,4 +1,25 @@
+import React from "react";
+import ItemRow from "./ItemRow";
+import axios from "axios";
+import { useState } from "react";
+
 export default function Challenge() {
+  const baseUrl = 'http://localhost:4567';
+  const [inventoryItems, setInventoryItems] = useState([]);
+
+
+  const getLowStockItems = () => {
+    axios.get(`${baseUrl}/low-stock`)
+      .then(response => {
+        setInventoryItems(response.data);
+        console.log(response.data);
+      })
+      .catch(error => {
+        console.error("Error fetching low-stock items:", error);
+      });
+  };
+
+
   return (
     <>
       <table>
@@ -12,11 +33,9 @@ export default function Challenge() {
           </tr>
         </thead>
         <tbody>
-          {/* 
-          TODO: Create an <ItemRow /> component that's rendered for every inventory item. The component
-          will need an input element in the Order Amount column that will take in the order amount and 
-          update the application state appropriately.
-          */}
+          {inventoryItems.map(item => (
+            <ItemRow key={item.id} item={item} />
+          ))}
         </tbody>
       </table>
       {/* TODO: Display total cost returned from the server */}
@@ -24,8 +43,14 @@ export default function Challenge() {
       {/* 
       TODO: Add event handlers to these buttons that use the Java API to perform their relative actions.
       */}
-      <button>Get Low-Stock Items</button>
+      <button onClick={getLowStockItems}>Get Low-Stock Items</button>
       <button>Determine Re-Order Cost</button>
     </>
   );
 }
+
+/*
+        TODO: Create an <ItemRow /> component that's rendered for every inventory item. The component
+        will need an input element in the Order Amount column that will take in the order amount and 
+        update the application state appropriately.
+        */

@@ -1,11 +1,13 @@
+//Main.java
+
 import static spark.Spark.*;
-import org.apache.poi.ss.usermodel.*;
-import java.io.File;
-import java.io.FileInputStream;
+import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Main {
 
     public static void main(String[] args) {
+        ResourceHandler resourceHandler = new ResourceHandler();
 
         // This is required to allow GET and POST requests with the header
         // 'content-type'
@@ -26,11 +28,23 @@ public class Main {
         // TODO: Return JSON containing the candies for which the stock is less than 25%
         // of it's capacity
         get("/low-stock", (request, response) -> {
-            return null;
+            try {
+                List<Candy> lowStockCandies = resourceHandler.getLowStockCandies();
+                ObjectMapper mapper = new ObjectMapper();
+                String json = mapper.writeValueAsString(lowStockCandies);
+                response.type("application/json");
+                response.status(200);
+                return json;
+            } catch (Exception e) {
+                e.printStackTrace();
+                response.status(500);
+                return "An internal server error occured";
+            }
         });
 
         // TODO: Return JSON containing the total cost of restocking candy
         post("/restock-cost", (request, response) -> {
+
             return null;
         });
 
