@@ -6,7 +6,12 @@ const ItemRow = ({ item, onOrderAmountChange }) => {
     // handle order amount input change
     const handleOrderAmountChange = (e) => {
 
-        const amount = parseInt(e.target.value, 10) || 0;
+        let amount = parseInt(e.target.value, 10) || 0;
+
+        if (amount < 0) {
+            amount = 0;
+        }
+
         onOrderAmountChange(id, amount);
         //console.log("Order Amount for " + name + ": " + e.target.value); // for testing
     };
