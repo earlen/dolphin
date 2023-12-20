@@ -6,18 +6,50 @@ import { useState } from "react";
 export default function Challenge() {
   const baseUrl = 'http://localhost:4567';
   const [inventoryItems, setInventoryItems] = useState([]);
+  const [reorderCost, setReorderCost] = useState(0.0);
+  const [orderAmounts, setOrderAmounts] = useState({});
+
 
 
   const getLowStockItems = () => {
     axios.get(`${baseUrl}/low-stock`)
       .then(response => {
         setInventoryItems(response.data);
-        console.log(response.data);
       })
       .catch(error => {
         console.error("Error fetching low-stock items:", error);
       });
   };
+
+  async function handleOrderCostRequest() {
+
+    const invalidItems = inventoryItems.filter(item => {
+      const orderAmount = orderAmounts[item.id] || 0;
+      return item.stockLevel + orderAmount > item.capacity;
+    });
+
+    if (invalidItems.length > 0) {
+      console.error("Order amount exceeds capacity for some items.");
+      let invalidItemIds = [];
+      for (let invalidItem of invalidItems) {
+        invalidItemIds.push(invalidItem.id);
+      }
+      const invalidSkusString = invalidItemIds.map(sku => `SKU: ${sku}`).join('\n');
+      alert(`Slected order amount exceeds capacity for the following SKUs: \n${invalidSkusString}`);
+      return;
+    }
+
+    axios.post(`${baseUrl}/restock-cost`, orderAmounts)
+      .then(response => {
+        let roundedResponse = Math.round(response.data * 100) / 100;
+        setReorderCost(roundedResponse);
+      })
+      .catch(error => {
+        console.error("Error retrieving order cost:", error);
+      });
+
+
+  }
 
 
   return (
@@ -34,23 +66,24 @@ export default function Challenge() {
         </thead>
         <tbody>
           {inventoryItems.map(item => (
-            <ItemRow key={item.id} item={item} />
+            <ItemRow
+              key={item.id}
+              item={item}
+              onOrderAmountChange={(id, amount) => {
+                setOrderAmounts(prev => {
+                  const newOrderAmounts = { ...prev, [id]: amount };
+                  return newOrderAmounts;
+                });
+              }}
+            />
           ))}
         </tbody>
       </table>
-      {/* TODO: Display total cost returned from the server */}
-      <div>Total Cost: </div>
-      {/* 
-      TODO: Add event handlers to these buttons that use the Java API to perform their relative actions.
-      */}
+      <div>Total Cost: ${reorderCost} </div>
       <button onClick={getLowStockItems}>Get Low-Stock Items</button>
-      <button>Determine Re-Order Cost</button>
+      <button onClick={handleOrderCostRequest}>Determine Re-Order Cost</button>
     </>
   );
 }
 
-/*
-        TODO: Create an <ItemRow /> component that's rendered for every inventory item. The component
-        will need an input element in the Order Amount column that will take in the order amount and 
-        update the application state appropriately.
-        */
+

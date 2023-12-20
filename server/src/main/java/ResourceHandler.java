@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.io.FileInputStream;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ResourceHandler {
 
@@ -34,28 +36,55 @@ public class ResourceHandler {
                 }
             }
         } catch (Exception e) {
-            System.out.println("--getLowStockCandies() error:");
+            System.err.println("--getLowStockCandies() error:");
             e.printStackTrace();
-            System.out.println("---end---");
+            System.err.println("---end error output---");
         }
-        System.out.println(lowStockCandies);
         return lowStockCandies;
     }
 
-    public double calculateRestockCost() {
-        // calculate and return the total cost of restocking candy
-        // access distributors map
+    public Map<Integer, Double> findLowestPrices() {
 
-        return 0.0;
-    }
+        Map<Integer, Double> lowestPrices = new HashMap<>();
 
-    private Workbook openWorkbook(String resourcePath) {
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
-            return WorkbookFactory.create(is);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+        List<Candy> outofStockCandies = getLowStockCandies(); // we will only ever care about the candies that are
+                                                              // almost out of
+                                                              // stock
+        for (Candy candy : outofStockCandies) {
+            lowestPrices.put(candy.getIDInteger(), Double.MAX_VALUE);
         }
+
+        File file = new File("server/resources/Distributors.xlsx");
+
+        try (InputStream iS = new FileInputStream(file);
+                Workbook workbook = WorkbookFactory.create(iS)) {
+
+            for (int sheetIndex = 0; sheetIndex < workbook.getNumberOfSheets(); sheetIndex++) {
+                Sheet sheet = workbook.getSheetAt(sheetIndex);
+
+                for (Row row : sheet) {
+                    if (row.getRowNum() == 0)
+                        continue; // skipping first row (headers)
+
+                    Cell idCell = row.getCell(1);
+                    if (idCell != null) {
+                        int id = (int) row.getCell(1).getNumericCellValue();
+                        if (lowestPrices.containsKey((Integer) id)) {
+                            Double cost = (Double) row.getCell(2).getNumericCellValue();
+                            if (cost < lowestPrices.get(id)) {
+                                lowestPrices.put(id, cost);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("--findLowestPrices() error:");
+            e.printStackTrace();
+            System.err.println("---end---");
+        }
+
+        return lowestPrices;
     }
 
 }

@@ -11,23 +11,14 @@ public class Candy {
         this.stock = inStock;
         this.capacity = maxStockCapacity;
         this.id = id;
-
     }
 
     public String getName() {
         return name;
     }
 
-    // public void setName(String name) {
-    // this.name = name;
-    // }
-
     public int getStockLevel() {
         return this.stock;
-    }
-
-    public void setStockLevel(int stockLevel) {
-        this.stock = stockLevel;
     }
 
     public int getCapacity() {
@@ -36,5 +27,9 @@ public class Candy {
 
     public int getID() {
         return this.id;
+    }
+
+    public Integer getIDInteger() {
+        return (Integer) this.id;
     }
 }

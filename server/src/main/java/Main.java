@@ -2,9 +2,14 @@
 
 import static spark.Spark.*;
 import java.util.List;
+import java.util.Map;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.HashMap;
 
 public class Main {
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static void main(String[] args) {
         ResourceHandler resourceHandler = new ResourceHandler();
@@ -25,13 +30,11 @@ public class Main {
         // This is required to allow the React app to communicate with this API
         before((request, response) -> response.header("Access-Control-Allow-Origin", "http://localhost:3000"));
 
-        // TODO: Return JSON containing the candies for which the stock is less than 25%
-        // of it's capacity
         get("/low-stock", (request, response) -> {
             try {
                 List<Candy> lowStockCandies = resourceHandler.getLowStockCandies();
-                ObjectMapper mapper = new ObjectMapper();
-                String json = mapper.writeValueAsString(lowStockCandies);
+                String json = MAPPER.writeValueAsString(lowStockCandies);
+
                 response.type("application/json");
                 response.status(200);
                 return json;
@@ -42,11 +45,48 @@ public class Main {
             }
         });
 
-        // TODO: Return JSON containing the total cost of restocking candy
         post("/restock-cost", (request, response) -> {
 
-            return null;
-        });
+            try {
+                Map<Integer, Integer> orderAmounts = MAPPER.readValue(request.body(),
+                        new TypeReference<Map<Integer, Integer>>() {
+                        });
 
+                Map<Integer, Double> lowestPrices = new HashMap<>();
+                lowestPrices = resourceHandler.findLowestPrices(); /// GETS LOWEST PRICES FOR LOWSTOCK ITEMS ONLY,
+                                                                   /// CHANGE TO ONLY NON-ZERO ORDER AMOUNTS??
+
+                System.out.print("Lowest prices: ");
+                System.out.println(lowestPrices);
+                System.out.print("Order amounts: ");
+                System.out.println(orderAmounts);
+
+                Double restockCost = 0.0;
+                for (Map.Entry<Integer, Integer> entry : orderAmounts.entrySet()) {
+
+                    Integer id = entry.getKey();
+                    Integer amount = entry.getValue();
+
+                    if (lowestPrices.containsKey(id)) {
+                        restockCost += (lowestPrices.get(id) * amount);
+                    }
+                }
+
+                System.out.print("Total Restocking Cost: ");
+                System.out.println(restockCost);
+
+                response.type("application/json");
+                response.status(200);
+
+                String json = MAPPER.writeValueAsString(restockCost);
+
+                return json;
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                response.status(500);
+                return "An internal server error occured";
+            }
+        });
     }
 }
