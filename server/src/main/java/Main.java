@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -35,14 +34,19 @@ public class Main {
         before((request, response) -> response.header("Access-Control-Allow-Origin", "http://localhost:3000"));
 
         get("/low-stock", (request, response) -> {
+
+            // getLowStockCandies() and writeValueAsString() can throw exceptions
             try {
+
                 List<Candy> lowStockCandies = resourceHandler.getLowStockCandies();
                 String json = MAPPER.writeValueAsString(lowStockCandies);
 
                 response.type("application/json");
                 response.status(200);
                 return json;
-            } catch (Exception e) {
+            }
+            // catch the excetpion
+            catch (Exception e) {
                 e.printStackTrace();
                 response.status(500);
                 return "An internal server error occured";
@@ -51,11 +55,15 @@ public class Main {
 
         post("/restock-cost", (request, response) -> {
 
+            // findLowestPrices(), readValue() and writeValueAsString() can throw exceptions
             try {
+
+                // Get orderAmounts from request body
                 Map<Integer, Integer> orderAmounts = MAPPER.readValue(request.body(),
                         new TypeReference<Map<Integer, Integer>>() {
                         });
 
+                // Isolate the keys, and init a new map
                 List<Integer> orderIDs = new ArrayList<>(orderAmounts.keySet());
                 Map<Integer, Double> lowestPrices = new HashMap<>();
 
@@ -67,6 +75,7 @@ public class Main {
                 System.out.print("Order amounts: ");
                 System.out.println(orderAmounts);
 
+                // Multiply maps and add product to total
                 Double restockCost = 0.0;
                 for (Map.Entry<Integer, Integer> entry : orderAmounts.entrySet()) {
 
@@ -86,8 +95,9 @@ public class Main {
                 response.type("application/json");
                 response.status(200);
                 return json;
-
-            } catch (Exception e) {
+            }
+            // catch the excetpion
+            catch (Exception e) {
                 e.printStackTrace();
                 response.status(500);
                 return "An internal server error occured";

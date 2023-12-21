@@ -6,14 +6,18 @@ const ItemRow = ({ item, onOrderAmountChange }) => {
     // handle order amount input change
     const handleOrderAmountChange = (e) => {
 
+        //non-numer input will be set to 0
         let amount = parseInt(e.target.value, 10) || 0;
 
+        //Amount cannot be negative
         if (amount < 0) {
             amount = 0;
         }
 
         onOrderAmountChange(id, amount);
-        //console.log("Order Amount for " + name + ": " + e.target.value); // for testing
+
+        // Uncomment for testing
+        //console.log("Order Amount for " + name + ": " + e.target.value); 
     };
 
     return (

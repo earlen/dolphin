@@ -51,7 +51,6 @@ export default function Challenge() {
       });
   }
 
-
   return (
     <>
       <table>
@@ -71,8 +70,7 @@ export default function Challenge() {
               item={item}
               onOrderAmountChange={(id, amount) => {
                 setOrderAmounts(prev => {
-                  const newOrderAmounts = { ...prev, [id]: amount };
-                  return newOrderAmounts;
+                  return { ...prev, [id]: amount };
                 });
               }}
             />

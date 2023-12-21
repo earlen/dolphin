@@ -7,9 +7,6 @@ import java.util.ArrayList;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
-//import static spark.Spark.redirect;
-
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +32,8 @@ public class ResourceHandler {
                 int maxCapacity = (int) row.getCell(2).getNumericCellValue();
                 int id = (int) row.getCell(3).getNumericCellValue();
 
+                // if the candy stocklevel is below the threshhod, construct and add it to the
+                // return variable
                 double lowStockThreshold = maxCapacity * 0.25;
                 if (inStock < lowStockThreshold) {
                     lowStockCandies.add(new Candy(name, inStock, maxCapacity, id));
@@ -64,9 +63,11 @@ public class ResourceHandler {
         try (InputStream iS = new FileInputStream(file);
                 Workbook workbook = WorkbookFactory.create(iS)) {
 
+            // iterate through sheets
             for (int sheetIndex = 0; sheetIndex < workbook.getNumberOfSheets(); sheetIndex++) {
                 Sheet sheet = workbook.getSheetAt(sheetIndex);
 
+                // iterate through rows
                 for (Row row : sheet) {
                     if (row.getRowNum() == 0)
                         continue; // skipping first row (headers)
@@ -76,6 +77,7 @@ public class ResourceHandler {
                         int id = (int) row.getCell(1).getNumericCellValue();
                         if (lowestPrices.containsKey((Integer) id)) {
                             Double cost = (Double) row.getCell(2).getNumericCellValue();
+                            // Insert if we found a better cost
                             if (cost < lowestPrices.get(id)) {
                                 lowestPrices.put(id, cost);
                             }
