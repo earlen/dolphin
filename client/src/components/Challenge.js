@@ -9,19 +9,19 @@ export default function Challenge() {
   const [reorderCost, setReorderCost] = useState(0.0);
   const [orderAmounts, setOrderAmounts] = useState({});
 
-
-
-  const getLowStockItems = () => {
+  function getLowStockItems() {
     axios.get(`${baseUrl}/low-stock`)
       .then(response => {
         setInventoryItems(response.data);
       })
       .catch(error => {
         console.error("Error fetching low-stock items:", error);
+        setInventoryItems([]);
+        alert("An internal server error occured and your request was not processed.");
       });
-  };
+  }
 
-  async function handleOrderCostRequest() {
+  function handleOrderCostRequest() {
 
     const invalidItems = inventoryItems.filter(item => {
       const orderAmount = orderAmounts[item.id] || 0;
@@ -46,9 +46,9 @@ export default function Challenge() {
       })
       .catch(error => {
         console.error("Error retrieving order cost:", error);
+        setReorderCost(0.0);
+        alert("An internal server error occured and your request was not processed.")
       });
-
-
   }
 
 

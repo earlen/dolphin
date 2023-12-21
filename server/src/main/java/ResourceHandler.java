@@ -5,13 +5,18 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.ArrayList;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+//import static spark.Spark.redirect;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ResourceHandler {
 
-    public List<Candy> getLowStockCandies() {
+    public List<Candy> getLowStockCandies() throws IOException, FileNotFoundException {
         // get candies from inventory with less than 25% capacity
         List<Candy> lowStockCandies = new ArrayList<>();
 
@@ -39,19 +44,19 @@ public class ResourceHandler {
             System.err.println("--getLowStockCandies() error:");
             e.printStackTrace();
             System.err.println("---end error output---");
+            throw e;
         }
+
         return lowStockCandies;
     }
 
-    public Map<Integer, Double> findLowestPrices() {
+    public Map<Integer, Double> findLowestPrices(List<Integer> orderIDs) throws IOException, FileNotFoundException {
 
         Map<Integer, Double> lowestPrices = new HashMap<>();
 
-        List<Candy> outofStockCandies = getLowStockCandies(); // we will only ever care about the candies that are
-                                                              // almost out of
-                                                              // stock
-        for (Candy candy : outofStockCandies) {
-            lowestPrices.put(candy.getIDInteger(), Double.MAX_VALUE);
+        // since doubles are primative, setting max value doesn't use more memory
+        for (Integer id : orderIDs) {
+            lowestPrices.put(id, Double.MAX_VALUE);
         }
 
         File file = new File("server/resources/Distributors.xlsx");
@@ -82,6 +87,7 @@ public class ResourceHandler {
             System.err.println("--findLowestPrices() error:");
             e.printStackTrace();
             System.err.println("---end---");
+            throw e;
         }
 
         return lowestPrices;

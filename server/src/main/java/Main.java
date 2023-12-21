@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Main {
@@ -12,6 +14,8 @@ public class Main {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static void main(String[] args) {
+
+        // Singleton use of resourceHandler used since its methods are thread safe
         ResourceHandler resourceHandler = new ResourceHandler();
 
         // This is required to allow GET and POST requests with the header
@@ -52,9 +56,11 @@ public class Main {
                         new TypeReference<Map<Integer, Integer>>() {
                         });
 
+                List<Integer> orderIDs = new ArrayList<>(orderAmounts.keySet());
                 Map<Integer, Double> lowestPrices = new HashMap<>();
-                lowestPrices = resourceHandler.findLowestPrices(); /// GETS LOWEST PRICES FOR LOWSTOCK ITEMS ONLY,
-                                                                   /// CHANGE TO ONLY NON-ZERO ORDER AMOUNTS??
+
+                // Find lowest prices for relavant IDS
+                lowestPrices = resourceHandler.findLowestPrices(orderIDs);
 
                 System.out.print("Lowest prices: ");
                 System.out.println(lowestPrices);
@@ -75,11 +81,10 @@ public class Main {
                 System.out.print("Total Restocking Cost: ");
                 System.out.println(restockCost);
 
-                response.type("application/json");
-                response.status(200);
-
                 String json = MAPPER.writeValueAsString(restockCost);
 
+                response.type("application/json");
+                response.status(200);
                 return json;
 
             } catch (Exception e) {

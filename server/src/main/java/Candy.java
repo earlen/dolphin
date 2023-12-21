@@ -29,7 +29,4 @@ public class Candy {
         return this.id;
     }
 
-    public Integer getIDInteger() {
-        return (Integer) this.id;
-    }
 }
